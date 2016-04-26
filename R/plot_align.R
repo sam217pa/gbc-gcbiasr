@@ -9,8 +9,20 @@
 ##' @import ggplot2
 ##' @importFrom RColorBrewer brewer.pal
 ##' @importFrom ggthemes extended_range_breaks
+##' @importFrom assertthat assert_that is.string
 ##' @export
-plot_align <- function(data, mutant_) {
+
+plot_align <- function(data, mutant_, plot_title=NULL)
+{
+    assert_that(
+        is.data.frame(data),
+        is.string(mutant_),
+        is.string(plot_title)
+    )
+
+    if (is.null(plot_title))
+        plot_title <- paste("Alignement pour la manip", toupper(mutant_))
+
     ## default color
     red    <- brewer.pal(n = 4, "Set1")[1]
     blue   <- brewer.pal(n = 4, "Set1")[2]
@@ -62,39 +74,17 @@ plot_align <- function(data, mutant_) {
         ##          label = "Donneur : ", color = blue, size = 4 ) +
         ## ## représente la séquence du receveur.
         geom_text(aes(label = refb, x = refp,
-                      y = num_of_seq + 10),
-                  color = "grey",
-                  vjust = 4,
-                  size = 4,
+                      y = num_of_seq + 10), color = "grey", vjust = 4, size = 4,
                   family = "Ubuntu Light") +
-        ## annotate("text", x = as.numeric(first_snp) - 20,
-        ##          y = num_of_seq + 10, vjust = 4,
-        ##          label = "Receveur : ", color = red, size = 4 ) +
-        ## j'ai tenté de représenter les séquences par des segments de couleur,
-        ## mais je trouve que ça perturbe la lecture. On a un effet moiré pas du
-        ## tout attendu, qui n'apporte rien.
-        ##
-        ## geom_segment(data =
-        ##                  filter(data, cons == "x") %>%
-        ##                  group_by(name) %>%
-        ##                  summarise(max = max(refp), min = min(refp)),
-        ##              aes(x = max, xend = min, y = name, yend = name),
-        ##              color = blue, alpha = 0.2) +
-        ## geom_segment(data =
-        ##                  filter(data, cons == "X") %>%
-        ##                  group_by(name) %>%
-        ##                  summarise(max = max(refp), min = min(refp)),
-        ##              aes(x = max, xend = min, y = name, yend = name),
-        ##              color = red, alpha = 0.2) +
         scale_color_manual(values = c("gray", "black"), guide = FALSE) +
-        ## scale_color_brewer(palette = "Set1", guide = "none") +
         scale_alpha( range=c(1/5, 0.8), guide=FALSE ) +
         scale_size(range = c(0.5, 2), breaks = c(10, 50),
                    labels = c("Faible", "Forte")) +
         scale_x_continuous(breaks = extended_range_breaks()(data$refp)) +
+        ## du premier au dernier snp
         coord_cartesian(xlim = c(first_snp, last_snp)) +
         labs(x = "", y = "", size = "Qualité",
-             title = paste("Alignement pour la manip", toupper(mutant_))) +
+             title = plot_title) +
         theme(legend.direction = "horizontal",
               legend.margin = unit(0,"lines"),
               panel.grid.major.y = element_line(size = 0.1, linetype = "dotted")) +

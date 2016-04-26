@@ -1,23 +1,27 @@
-##' Read the csv dataset in ``path'' and return it as a clean dataset.
-##'
-##' @title read_phruscle
-##' @param path the path to the csv file.
-##' @return a tbl_df
-##' @author Samuel Barreto
-#' @importFrom assertthat assert_that has_extension
+#' Read the csv dataset in ``path'' and return it as a clean dataset.
+#'
+#' @title read_phruscle
+#' @param path the path to the csv file.
+#' @return a tbl_df
+#' @author Samuel Barreto
+#' @importFrom assertthat assert_that has_extension is.string
 #' @importFrom readr read_csv
 #' @import dplyr
 #'
 #' @export
 
-read_phruscle <- function(path=NULL,
-                          mutant_levels = c("s", "w", "sw", "ws")) {
+read_phruscle <- function(path=NULL, mutant_levels = NULL) {
 
-    assert_that(file.exists(path))
-    has_extension(path = path, ext = "csv")
+    assert_that(
+        file.exists(path),
+        has_extension(path = path, ext = "csv"),
+        is.null(mutant_levels) | is.vector(mutant_levels) | is.string(mutant_levels)
+    )
+
+    if (is.null(mutant_levels)) mutant_levels <- c("s", "w", "sw", "ws")
 
     set_base_level <- function(column) {
-        factor(column, levels = c("G", "C", "T", "A"))
+        factor(column, levels = c("G", "C", "T", "A", "N"))
     }
 
     snp <- read_csv(path, col_types = "ccciciccid", trim_ws = TRUE) %>%
@@ -115,12 +119,12 @@ read_phruscle <- function(path=NULL,
     find_isinconv <- function(data) {
         data %>%
             ## si la position est avant la position de switch.
-            mutate(inconv = ifelse(refp <= switchp, FALSE, TRUE)) %>%
+            mutate(inconv = ifelse(refp >= switchp, TRUE, FALSE)) %>%
             inner_join(data, .)
     }
 
     find_isrestor <- function(data) {
-        data %>% 
+        data %>%
             filter(inconv, cons == "x" | cons == "X", expb == refb) %>%
             mutate(isrestor = TRUE) %>%
             left_join(data, .)
