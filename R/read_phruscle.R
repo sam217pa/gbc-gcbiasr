@@ -12,32 +12,40 @@
 
 read_phruscle <- function(path=NULL, mutant_levels = NULL)
 {
+    ## test
     assert_that(
         file.exists(path),
         has_extension(path = path, ext = "csv"),
         is.null(mutant_levels) | is.vector(mutant_levels) | is.string(mutant_levels)
     )
 
+    ## default parameters
     if (is.null(mutant_levels)) mutant_levels <- c("s", "w", "sw", "ws")
 
-    set_base_level <- function(column) {
-        factor(column, levels = c("G", "C", "T", "A", "N"))
-    }
-
+    ## read data, set default column types
     snp <- read_csv(path, col_types = "ccciciccid", trim_ws = TRUE)
 
-    if (FALSE %in% (snp$base == snp$seqb))
-        stop("Bases are not the same in the phred file and the parsed alignment.")
+    ## set the correct base levels
+    set_base_level <- function(x) factor(x, levels = c("G", "C", "T", "A", "N"))
 
-    snp <- snp %>%
-        mutate(
-            name = gsub("-1073.+$", "", name),
-            refb = set_base_level(refb),
-            snpb = set_base_level(snpb),
-            seqb = set_base_level(seqb)
-            ) %>%
-        select(
-            name = name, refb, snpb, expb = seqb, refp, expp = seqp, cons, qual)
+    snp <- mutate(
+        snp,
+        name = gsub("-1073.+$", "", name),
+        refb = set_base_level(refb),
+        snpb = set_base_level(snpb),
+        seqb = set_base_level(seqb)
+    ) %>%
+        select(name = name, refb, snpb, expb = seqb, refp, expp = seqp, cons,
+               qual, base)
+
+    if (FALSE %in% (toupper(snp$base) == snp$expb)) {
+        warning("Bases are not the same in the phred file and the parsed alignment.",
+                "You should check them, they're usually the sign of",
+                "alignment artifacts")
+    } else {
+        snp <- select(snp, -base)
+    }
+
 
     ## add a column which set the mutant type
     find_mutant <- function(data) {
