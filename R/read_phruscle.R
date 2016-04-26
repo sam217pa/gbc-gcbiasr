@@ -10,8 +10,8 @@
 #'
 #' @export
 
-read_phruscle <- function(path=NULL, mutant_levels = NULL) {
-
+read_phruscle <- function(path=NULL, mutant_levels = NULL)
+{
     assert_that(
         file.exists(path),
         has_extension(path = path, ext = "csv"),
@@ -24,7 +24,12 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL) {
         factor(column, levels = c("G", "C", "T", "A", "N"))
     }
 
-    snp <- read_csv(path, col_types = "ccciciccid", trim_ws = TRUE) %>%
+    snp <- read_csv(path, col_types = "ccciciccid", trim_ws = TRUE)
+
+    if (FALSE %in% (snp$base == snp$seqb))
+        stop("Bases are not the same in the phred file and the parsed alignment.")
+
+    snp <- snp %>%
         mutate(
             name = gsub("-1073.+$", "", name),
             refb = set_base_level(refb),
@@ -45,7 +50,6 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL) {
             else if (grepl("s", name )) "s"
             else ""
         }
-
         ## neat little trick to reduce time of rowwise application of find_mutant.
         ## get the mutant's type, either ws, sw, w or s.
         data %>%

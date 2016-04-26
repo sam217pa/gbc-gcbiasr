@@ -8,20 +8,20 @@
 ##' @import ggplot2
 ##' @export
 
-plot_gc_content <- function(data, mut=NULL, plot_title=NULL) {
-
+plot_gc_content <- function(data, mut=NULL, plot_title=NULL)
+{
     assert_that(
         is.data.frame(data),
         is.string(mut) | is.null(mut),
         is.string(plot_title) | is.null(plot_title)
     )
 
+                                        # set default parameter
     if (is.null(mut)) mut <- c("ws", "sw", "w", "s")
     if (is.null(plot_title)) plot_title <- "Comparaison des taux de GC"
 
+    ## compute the gc content per sequence
     get_gc_content <- function(data, mut) {
-        ## clean_seq <- function(x) toString(x) %>% gsub(", ", "", . )
-
         gc_content <- data %>%
             mutate(snpb = as.character(snpb),
                    expb = as.character(expb),
@@ -42,9 +42,12 @@ plot_gc_content <- function(data, mut=NULL, plot_title=NULL) {
     }
 
     data <-
+        ## omit the rare cases of N in sequences
         filter(data, !(is.na(refb)), !(is.na(snpb)), !(is.na(expb))) %>%
         keep_clean_only() %>%
-        get_gc_content(mut = mut)
+        get_gc_content(mut = mut) %>%
+        mutate(mutant = factor(mutant, levels = c("w", "s", "sw", "ws"),
+                               labels = c("AT", "GC", "AT/GC", "GC/AT")))
 
     ggplot(data, aes(x = type, y = GC)) +
         geom_jitter(aes(color = mutant), width = 1/4, alpha = 1/3, size = 1) +
