@@ -11,6 +11,7 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr (>= 0.4.3),
+    tidyr (>= 0.4.1),
     ggplot2 (>= 2.0),
     readr (>= 0.2.2),
     ggthemes (>= 3.0.1),
@@ -19,4 +20,7 @@ Imports:
     viridis (>= 0.3.2),
     assertthat (>= 0.1),
     extrafont (>= 0.17)
+Suggests:
+    extrafont (>= 0.17),
+    dplyr (>= 0.4.3)
 RoxygenNote: 5.0.1

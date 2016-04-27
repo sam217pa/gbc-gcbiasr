@@ -91,11 +91,12 @@ plot_align <- function(data, mutant_, plot_title=NULL, quality = 30)
         labs(x = "", y = "", size = "Qualité",
              title = plot_title,
              color = "Haplotype") +
-        guides(colour = guide_legend(override.aes = list(shape = 20))) +
+        guides(colour = guide_legend(override.aes = list(shape = 20, size = 3))) +
         theme(legend.margin = unit(0,"lines"),
               panel.grid.major.y = element_line(size = 0.1, linetype = "dotted"),
               legend.position = "right",
-              legend.justification = c(0, 1))
+              legend.justification = c(0, 1),
+              legend.text = element_text(size = 6))
         ## legend_position(0.8, 0.98)
 
     if (nchar(mutant_) == 2) {
@@ -105,18 +106,15 @@ plot_align <- function(data, mutant_, plot_title=NULL, quality = 30)
                        aes(x = refp + 8, color = expb),
                        size = 4, shape = "+") +
             ## switch point
-            geom_point(aes(x = switchp + 8, color = switchb), alpha = 1, size = 4, shape = "-") #+
-            ## scale_color_manual(values = c(red, blue, "gray", blue, red, "black"), guide = FALSE)
-            ## scale_color_manual(limits = c("TRUE", "FALSE", "A", "T", "C", "G"),
-            ##                    values = c("black", "gray", blue, blue, red, red))
+            geom_point(aes(x = switchp + 8, color = switchb), alpha = 1, size = 4, shape = "-")
     } else {
         align_plot <- align_plot +
             geom_point(data = filter(data, isrestor == TRUE, qual > quality),
                        aes(x = refp + 8, color = expb),
-                       size = 4, shape = "+") 
+                       size = 4, shape = "+")
     }
 
-    print(align_plot)
+    align_plot
 }
 
 #' Plot the quality of the sequence

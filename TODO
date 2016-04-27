@@ -1,0 +1,26 @@
+# -*- org -*-
+
+* DONE quality control
+CLOSED: [2016-04-26 Tue 15:20]
+Écrire une fonction qui permette de représenter la qualité des séquences.
+
+* DONE plot distribution
+CLOSED: [2016-04-26 Tue 17:34]
+Écrire une fonction qui permette de représenter la distribution des points de
+bascule entre les haplotypes.
+
+* DONE plot gc content
+CLOSED: [2016-04-26 Tue 17:34]
+Écrire la fonction qui permette de représente l'évolution des taux de GC d'une
+séquence à l'autre.
+
+* DONE compte doublets et cas complexes
+CLOSED: [2016-04-27 Wed 10:16]
+Écrire une fonction permettant de compter les doublets dans les séquences,
+qu'ils soient en fin de trace de conversion, ou au milieu.
+
+* TODO Tester la fonction permettant de compter les motifs
+Il faut encore tester la fonction. Pour ça je veux la confronter avec les
+graphiques "plot_align" modifiés de façon à représenter le SNP au point de
+bascule par un point plus gros avec une couleur différente, représentant le type
+de SNP (W ou S).
