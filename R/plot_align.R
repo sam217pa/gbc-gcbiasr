@@ -1,23 +1,24 @@
 ##' Plot the alignment of the markers positions
 ##'
-##' @title plot_align
-##' @param data a data.frame. it must be the output of \code{read_phruscle}.
-##' @param mutant_ the mutant to filter by.
-##' @return a ggplot output of the alignment
-##' @author Samuel Barreto
-##' @import dplyr
-##' @import ggplot2
-##' @importFrom RColorBrewer brewer.pal
-##' @importFrom ggthemes extended_range_breaks
-##' @importFrom assertthat assert_that is.string
-##' @export
-
-plot_align <- function(data, mutant_, plot_title=NULL)
+#' @title plot_align
+#' @param data a data.frame. it must be the output of \code{read_phruscle}.
+#' @param mutant_ the mutant to filter by.
+#' @param plot_title chose a title. if NULL, guess from the mutant parameter
+#' @param quality min quality to consider a restoration as such
+#' @return a ggplot output of the alignment
+#' @author Samuel Barreto
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom ggthemes extended_range_breaks
+#' @importFrom assertthat assert_that is.string
+#' @export
+plot_align <- function(data, mutant_, plot_title=NULL, quality = 30)
 {
     assert_that(
         is.data.frame(data),
         is.string(mutant_),
-        is.string(plot_title)
+        is.null(plot_title) | is.string(plot_title)
     )
 
     if (is.null(plot_title))
@@ -29,7 +30,8 @@ plot_align <- function(data, mutant_, plot_title=NULL)
     green  <- brewer.pal(n = 4, "Set1")[3]
     violet <- brewer.pal(n = 4, "Set1")[4]
 
-    sort_by_tract_length <- function(data, mut) {
+    sort_by_tract_length <- function(data, mut)
+    {
         ## combine les données pour les clones avec conversion et les clones
         ## sans, pour lesquels on ne peut pas déterminer de longueur de trace de
         ## conversion.
@@ -58,12 +60,12 @@ plot_align <- function(data, mutant_, plot_title=NULL)
     ## default output theme.
     set_gcbiasr_theme()
 
-    ggplot(data = data, aes(x = refp, y = name)) +
+    align_plot <- ggplot(data = data, aes(x = refp, y = name)) +
         geom_point(aes(color = inconv, size = qual, alpha=qual)) +
         ## représente les cas complexes
-        geom_point(data = filter(data, isrestor == TRUE),
-                   ## aes(alpha = qual), color = green, size = 5) +
-                   aes(alpha = qual), color = red, size = 3) +
+        geom_point(data = filter(data, isrestor == TRUE, qual > quality),
+                   aes(size = qual),
+                   color = "gray") +
         ## représente la séquence du donneur
         geom_text(aes(label = snpb, x = refp, y = -7),
                   color = "black",
@@ -76,32 +78,58 @@ plot_align <- function(data, mutant_, plot_title=NULL)
         geom_text(aes(label = refb, x = refp,
                       y = num_of_seq + 10), color = "grey", vjust = 4, size = 4,
                   family = "Ubuntu Light") +
-        scale_color_manual(values = c("gray", "black"), guide = FALSE) +
         scale_alpha( range=c(1/5, 0.8), guide=FALSE ) +
         scale_size(range = c(0.5, 2), breaks = c(10, 50),
                    labels = c("Faible", "Forte")) +
+        scale_shape(guide = FALSE) +
         scale_x_continuous(breaks = extended_range_breaks()(data$refp)) +
+        scale_color_manual(limits = c("TRUE", "FALSE", "A", "T", "C", "G"),
+                           values = c("black", "gray", blue, blue, red, red),
+                           labels = c("Donneur", "Receveur", "A", "T", "C", "G")) +
         ## du premier au dernier snp
         coord_cartesian(xlim = c(first_snp, last_snp)) +
         labs(x = "", y = "", size = "Qualité",
-             title = plot_title) +
-        theme(legend.direction = "horizontal",
-              legend.margin = unit(0,"lines"),
-              panel.grid.major.y = element_line(size = 0.1, linetype = "dotted")) +
-        legend_position(0.8, 0.98)
+             title = plot_title,
+             color = "Haplotype") +
+        guides(colour = guide_legend(override.aes = list(shape = 20))) +
+        theme(legend.margin = unit(0,"lines"),
+              panel.grid.major.y = element_line(size = 0.1, linetype = "dotted"),
+              legend.position = "right",
+              legend.justification = c(0, 1))
+        ## legend_position(0.8, 0.98)
+
+    if (nchar(mutant_) == 2) {
+        align_plot <- align_plot +
+            ## plot complex cases
+            geom_point(data = filter(data, isrestor == TRUE, qual > quality),
+                       aes(x = refp + 8, color = expb),
+                       size = 4, shape = "+") +
+            ## switch point
+            geom_point(aes(x = switchp + 8, color = switchb), alpha = 1, size = 4, shape = "-") #+
+            ## scale_color_manual(values = c(red, blue, "gray", blue, red, "black"), guide = FALSE)
+            ## scale_color_manual(limits = c("TRUE", "FALSE", "A", "T", "C", "G"),
+            ##                    values = c("black", "gray", blue, blue, red, red))
+    } else {
+        align_plot <- align_plot +
+            geom_point(data = filter(data, isrestor == TRUE, qual > quality),
+                       aes(x = refp + 8, color = expb),
+                       size = 4, shape = "+") 
+    }
+
+    print(align_plot)
 }
 
-##' Plot the quality of the sequence
-##'
-##' @title plot_qual
-##' @param data the output of \code{run_phruscle}.
-##' @param mutant_ the mutant to filter by.
-##' @return a ggplot2 plot.
-##' @author Samuel Barreto
-##' @importFrom RColorBrewer brewer.pal
-##' @import dplyr
-##' @import ggplot2
-##' @export
+#' Plot the quality of the sequence
+#'
+#' @title plot_qual
+#' @param data the output of \code{run_phruscle}.
+#' @param mutant_ the mutant to filter by.
+#' @return a ggplot2 plot.
+#' @author Samuel Barreto
+#' @importFrom RColorBrewer brewer.pal
+#' @import dplyr
+#' @import ggplot2
+#' @export
 
 plot_qual <- function(data, mutant_) {
     red    <- brewer.pal(n = 4, "Set1")[1]
@@ -120,18 +148,19 @@ plot_qual <- function(data, mutant_) {
 }
 
 
-##' Plot the alignment and the quality of the sequence juxtaposed
-##'
-##'
-##' @title plot_align_qual
-##' @param data the output of \code{run_phruscle}.
-##' @param mutant_ the mutant to filter by.
-##' @return a ggplot2 plot.
-##' @author Samuel Barreto
-##' @importFrom cowplot plot_grid
-##' @export
+#' Plot the alignment and the quality of the sequence juxtaposed
+#'
+#'
+#' @title plot_align_qual
+#' @param data the output of \code{run_phruscle}.
+#' @param mutant_ the mutant to filter by.
+#' @return a ggplot2 plot.
+#' @author Samuel Barreto
+#' @importFrom cowplot plot_grid
+#' @export
 
-plot_align_qual <- function(data, mutant_) {
+plot_align_qual <- function(data, mutant_)
+{
     plot_grid(
         plot_align(data, mutant_),
         plot_qual(data, mutant_),

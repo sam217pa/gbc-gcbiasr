@@ -43,7 +43,8 @@ set_gcbiasr_theme <- function() {
                                                 color = color.strip.background),
                 legend.position="none", # Format the legend, but hide by default
                 legend.background = element_blank(),
-                legend.text = element_text(size=9,color=color.axis.title),
+                legend.text = element_text(size=4,color=color.axis.title),
+                legend.title = element_text(size=8,color=color.axis.title),
                 legend.key = element_rect(
                     fill = scales::alpha("gray", 0),
                     colour = scales::alpha("gray", 0)),
