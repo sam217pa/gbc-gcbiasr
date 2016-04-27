@@ -1,8 +1,6 @@
 ##' Plot the mean gc content per sequence
 ##'
 ##' @importFrom assertthat is.string assert_that
-##' @importFrom seqinr GC
-##' @importFrom tidyr gather
 ##' @importFrom ggthemes scale_colour_solarized extended_range_breaks
 ##' @import dplyr
 ##' @import ggplot2
@@ -20,31 +18,8 @@ plot_gc_content <- function(data, mut=NULL, plot_title=NULL)
     if (is.null(mut)) mut <- c("ws", "sw", "w", "s")
     if (is.null(plot_title)) plot_title <- "Comparaison des taux de GC"
 
-    ## compute the gc content per sequence
-    get_gc_content <- function(data, mut) {
-        gc_content <- data %>%
-            mutate(snpb = as.character(snpb),
-                   expb = as.character(expb),
-                   refb = as.character(refb)) %>%
-            filter(mutant %in% mut) %>%
-            group_by(name, mutant) %>%
-            ## compute gc content of the respective sequence
-            summarise(exp = seqinr::GC(expb),
-                      snp = seqinr::GC(snpb),
-                      ref = seqinr::GC(refb))
 
-        ## convert the data set to long form.
-        gc_content %>%
-            gather("type", "GC", 3:5) %>%
-            mutate(type = factor(
-                       type, levels = c("snp", "exp", "ref"),
-                       labels = c("Donneur", "Recombinant", "Receveur")))
-    }
-
-    data <-
-        ## omit the rare cases of N in sequences
-        filter(data, !(is.na(refb)), !(is.na(snpb)), !(is.na(expb))) %>%
-        keep_clean_only() %>%
+    data <- keep_clean_only() %>%
         get_gc_content(mut = mut) %>%
         mutate(mutant = factor(mutant, levels = c("w", "s", "sw", "ws"),
                                labels = c("AT", "GC", "AT/GC", "GC/AT")))
