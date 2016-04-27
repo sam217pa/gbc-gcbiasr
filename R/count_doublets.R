@@ -15,8 +15,8 @@ convert_seq_to_char <- function(data) {
 #' @import dplyr
 #' @export
 
-make_genotype <- function(data, mutant_ = c("ws", "sw", "s", "w"), qual_ = 30, clean=FALSE) {
-
+make_genotype <- function(data, mutant_ = c("ws", "sw", "s", "w"), qual_ = 30, clean=FALSE)
+{
     assert_that(
         is.data.frame(data),
         is.vector(mutant_) & is.character(mutant_) | is.string(mutant_),
@@ -83,71 +83,146 @@ count_kmer <- function(data, kmer) {
         filter(anom > 0)
 }
 
-#' Count pattern in genotype
+#' Count last SNP pattern
 #'
-#' Count the occurence of \code{kmer} in the genotype of mut.
+#' Per type of mutant, count the last SNP of the gene conversion tract,
+#' and determine its type, either W (AT) or S (GC).
+#'
 #' @param data a dataframe results of \code{read_phruscle}
-#' @param mut the mutant to filter by
-#' @param kmer the kmer to count.
+#' @param print logical, print the resulting table or not. TRUE by default
 #' @return a table
 #' @author Samuel Barreto
 #' @import dplyr
-#' @importFrom assertthat is.string is.flag
-#'
+#' @import ggplot2
+#' @importFrom assertthat is.flag
 #' @export
 
-count_motif <- function(data, mut, kmer, clean=TRUE)
+count_last_snp <- function(data, report = TRUE)
 {
-    valid_kmer <- c("WWW", "SWW", "WSW", "SSW", "WWS", "SWS", "WSS", "SSS",
-                    "WW", "SW", "WS", "SS")
+    if (!(is.data.frame(data)))
+        stop(data, " is not a dataframe")
+    if (!is.flag(report))
+        stop(report, " must be TRUE or FALSE")
 
-    if (!is.data.frame(data))
-        stop(data, "must be a dataframe.")
-    if (!(is.vector(mut) & is.character(mut) | is.string(mut)))
-        stop(mut, " must be a vector of character or a single string.")
-    if (!is.string(kmer))
-        stop(kmer, " must be a countable motif.")
-    if (!(kmer %in% valid_kmer))
-        stop(kmer, " is not a valid kmer to search for.")
-    if (!is.flag(clean))
-        stop(clean, " should be logical.")
+    data <-
+        data %>%
+        filter(switchp != lastmp, refp == switchp, cons == "x" | cons == "X") %>%
+        ## print()
+        ## filter(is.na(sens))
+        group_by(mutant, sens) %>%
+        summarise(count = n()) %>%
+        ungroup() %>%
+        mutate(mutant = factor(mutant, labels = c("S", "W", "SW", "WS")),
+               sens = factor(sens, labels = c("CG", "AT")))
 
-    num_of_seq <- n_distinct(filter(data, mutant %in% mut)$name)
+    class(data) <- c("lastsnp", class(data))
 
-    ## compte les kmer.
-    kmer_counter <- function(kmer)
-    {
-        data %>% make_genotype(mut, clean = clean) %>% count_kmer(kmer) %>%
-            ungroup() %>%
-            { if (nrow( . ) > 0) select( . , anom) %>% sum() else 0}
-    }
-
-    if (nchar(kmer) == 3) {
-        kmer_counter(kmer)
-    } else {
-        ## do something else. must take into account the restoration. could
-        ## change the count of doublets
-        kmer <- unlist(strsplit(kmer, ""))
-        kmer_xy <- gsub(", ", "", toString(c(kmer[1], kmer[2])))
-        kmer_xyy <- gsub(", ", "", toString(c(kmer[1], kmer[2], kmer[2])))
-        kmer_yxx <- gsub(", ", "", toString(c(kmer[2], kmer[1], kmer[1])))
-
-        if (kmer[1] == kmer[2]) {
-            total_count <- kmer_counter(kmer_xy) -
-                kmer_counter(kmer_xyy)
-        } else {
-            total_count <- kmer_counter(kmer_xy) -
-                kmer_counter(kmer_xyy) - kmer_counter(kmer_yxx)
-        }
-
-        if (!(total_count < num_of_seq)) {
-            stop(total_count, " is greater than the number of sequences.\n",
-                 "Check that kmer and mut are coherent values to look for.")
-        } else if (!(total_count > 0)) {
-            stop(total_count, " is less than 0\n",
-                 "Check that kmer and mut are coherent values to look for.")
-        } else {
-            total_count
-        }
-    }
+    data
 }
+
+
+#' @title Count restoration of wild type haplotype
+#' @description
+#' This function count the number of event of wild type haplotype restoration.
+#'
+#' @param data a data frame of snp calling.
+#' @param quality quality bellow which bases are not to be trusted
+#' @importFrom assertthat is.flag is.count
+#' @import dplyr
+#'
+#' @export
+count_restor <- function(data, quality = 40)
+{
+    if (!(is.data.frame(data)))
+        stop(data, " must be a dataframe")
+    if (!is.count(quality))
+        stop(quality, " is not a valid quality")
+
+    data <-
+        data %>%
+        filter(isrestor, qual >= quality) %>%
+        ## mutate(mutant = factor(mutant, labels = c("S", "W", "SW", "WS"))) %>%
+        group_by(mutant, sens) %>%
+        summarise(count = n()) %>%
+        ungroup() %>%
+        mutate(sens = factor(sens, labels = c("CG", "AT")))
+
+    class(data) <- c("lastsnp", class(data))
+    data
+}
+
+#' @export
+print.lastsnp <- function(x, ...)
+{
+    print(knitr::kable(x, align = "c"))
+}
+
+#' @export
+plot.lastsnp <- function(x, ...)
+{
+    ggplot(x, aes(x = mutant, y = count, color = sens )) +
+        geom_point() +
+        coord_flip() +
+        scale_color_solarized(
+            labels = c("AT", "CG"),
+            guide = guide_legend(title = "SNP au point\nde bascule")) +
+        scale_y_continuous(breaks = extended_range_breaks()(x$count)) +
+        labs(x = "Donneur", y = "") +
+        theme(legend.position = "right")
+}
+
+## count_motif <- function(data, mut, kmer, clean=TRUE)
+## {
+##     valid_kmer <- c("WWW", "SWW", "WSW", "SSW", "WWS", "SWS", "WSS", "SSS",
+##                     "WW", "SW", "WS", "SS")
+
+##     if (!is.data.frame(data))
+##         stop(data, "must be a dataframe.")
+##     if (!(is.vector(mut) & is.character(mut) | is.string(mut)))
+##         stop(mut, " must be a vector of character or a single string.")
+##     if (!is.string(kmer))
+##         stop(kmer, " must be a countable motif.")
+##     if (!(kmer %in% valid_kmer))
+##         stop(kmer, " is not a valid kmer to search for.")
+##     if (!is.flag(clean))
+##         stop(clean, " should be logical.")
+
+##     num_of_seq <- n_distinct(filter(data, mutant %in% mut)$name)
+
+##     ## compte les kmer.
+##     kmer_counter <- function(kmer)
+##     {
+##         data %>% make_genotype(mut, clean = clean) %>% count_kmer(kmer) %>%
+##             ungroup() %>%
+##             { if (nrow( . ) > 0) select( . , anom) %>% sum() else 0}
+##     }
+
+##     if (nchar(kmer) == 3) {
+##         kmer_counter(kmer)
+##     } else {
+##         ## do something else. must take into account the restoration. could
+##         ## change the count of doublets
+##         kmer <- unlist(strsplit(kmer, ""))
+##         kmer_xy <- gsub(", ", "", toString(c(kmer[1], kmer[2])))
+##         kmer_xyy <- gsub(", ", "", toString(c(kmer[1], kmer[2], kmer[2])))
+##         kmer_yxx <- gsub(", ", "", toString(c(kmer[2], kmer[1], kmer[1])))
+
+##         if (kmer[1] == kmer[2]) {
+##             total_count <- kmer_counter(kmer_xy) -
+##                 kmer_counter(kmer_xyy)
+##         } else {
+##             total_count <- kmer_counter(kmer_xy) -
+##                 kmer_counter(kmer_xyy) - kmer_counter(kmer_yxx)
+##         }
+
+##         if (!(total_count < num_of_seq)) {
+##             stop(total_count, " is greater than the number of sequences.\n",
+##                  "Check that kmer and mut are coherent values to look for.")
+##         } else if (!(total_count > 0)) {
+##             stop(total_count, " is less than 0\n",
+##                  "Check that kmer and mut are coherent values to look for.")
+##         } else {
+##             total_count
+##         }
+##     }
+## }
