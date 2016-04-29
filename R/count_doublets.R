@@ -15,13 +15,16 @@ convert_seq_to_char <- function(data) {
 #' @import dplyr
 #' @export
 
-make_genotype <- function(data, mutant_ = c("ws", "sw", "s", "w"), qual_ = 30, clean=FALSE)
+make_genotype <- function(data
+                         ,mutant_ = c("ws", "sw", "s", "w")
+                         ,qual_ = 30
+                         ,clean=FALSE)
 {
     assert_that(
-        is.data.frame(data),
-        is.vector(mutant_) & is.character(mutant_) | is.string(mutant_),
-        is.count(qual_),
-        is.flag(clean)
+        is.data.frame(data)
+       ,is.vector(mutant_) & is.character(mutant_) | is.string(mutant_)
+       ,is.count(qual_)
+       ,is.flag(clean)
     )
 
     weak_or_strong <- function(base) {
@@ -89,7 +92,6 @@ count_kmer <- function(data, kmer) {
 #' and determine its type, either W (AT) or S (GC).
 #'
 #' @param data a dataframe results of \code{read_phruscle}
-#' @param print logical, print the resulting table or not. TRUE by default
 #' @return a table
 #' @author Samuel Barreto
 #' @import dplyr
@@ -97,12 +99,10 @@ count_kmer <- function(data, kmer) {
 #' @importFrom assertthat is.flag
 #' @export
 
-count_last_snp <- function(data, report = TRUE)
+count_last_snp <- function(data)
 {
     if (!(is.data.frame(data)))
         stop(data, " is not a dataframe")
-    if (!is.flag(report))
-        stop(report, " must be TRUE or FALSE")
 
     data <-
         data %>%
@@ -112,8 +112,8 @@ count_last_snp <- function(data, report = TRUE)
         group_by(mutant, sens) %>%
         summarise(count = n()) %>%
         ungroup() %>%
-        mutate(mutant = factor(mutant, labels = c("S", "W", "SW", "WS")),
-               sens = factor(sens, labels = c("CG", "AT")))
+        mutate(mutant = factor(mutant, labels = c("S", "W", "SW", "WS"))
+              ,sens = factor(sens, levels = c("ws", "sw"), labels = c("CG", "AT")))
 
     class(data) <- c("lastsnp", class(data))
 
@@ -154,7 +154,7 @@ count_restor <- function(data, quality = 40)
 #' @export
 print.lastsnp <- function(x, ...)
 {
-    print(knitr::kable(x, align = "c"))
+    cat(knitr::kable(x, align = "c"), sep = "\n")
 }
 
 #' @export
@@ -170,59 +170,3 @@ plot.lastsnp <- function(x, ...)
         labs(x = "Donneur", y = "") +
         theme(legend.position = "right")
 }
-
-## count_motif <- function(data, mut, kmer, clean=TRUE)
-## {
-##     valid_kmer <- c("WWW", "SWW", "WSW", "SSW", "WWS", "SWS", "WSS", "SSS",
-##                     "WW", "SW", "WS", "SS")
-
-##     if (!is.data.frame(data))
-##         stop(data, "must be a dataframe.")
-##     if (!(is.vector(mut) & is.character(mut) | is.string(mut)))
-##         stop(mut, " must be a vector of character or a single string.")
-##     if (!is.string(kmer))
-##         stop(kmer, " must be a countable motif.")
-##     if (!(kmer %in% valid_kmer))
-##         stop(kmer, " is not a valid kmer to search for.")
-##     if (!is.flag(clean))
-##         stop(clean, " should be logical.")
-
-##     num_of_seq <- n_distinct(filter(data, mutant %in% mut)$name)
-
-##     ## compte les kmer.
-##     kmer_counter <- function(kmer)
-##     {
-##         data %>% make_genotype(mut, clean = clean) %>% count_kmer(kmer) %>%
-##             ungroup() %>%
-##             { if (nrow( . ) > 0) select( . , anom) %>% sum() else 0}
-##     }
-
-##     if (nchar(kmer) == 3) {
-##         kmer_counter(kmer)
-##     } else {
-##         ## do something else. must take into account the restoration. could
-##         ## change the count of doublets
-##         kmer <- unlist(strsplit(kmer, ""))
-##         kmer_xy <- gsub(", ", "", toString(c(kmer[1], kmer[2])))
-##         kmer_xyy <- gsub(", ", "", toString(c(kmer[1], kmer[2], kmer[2])))
-##         kmer_yxx <- gsub(", ", "", toString(c(kmer[2], kmer[1], kmer[1])))
-
-##         if (kmer[1] == kmer[2]) {
-##             total_count <- kmer_counter(kmer_xy) -
-##                 kmer_counter(kmer_xyy)
-##         } else {
-##             total_count <- kmer_counter(kmer_xy) -
-##                 kmer_counter(kmer_xyy) - kmer_counter(kmer_yxx)
-##         }
-
-##         if (!(total_count < num_of_seq)) {
-##             stop(total_count, " is greater than the number of sequences.\n",
-##                  "Check that kmer and mut are coherent values to look for.")
-##         } else if (!(total_count > 0)) {
-##             stop(total_count, " is less than 0\n",
-##                  "Check that kmer and mut are coherent values to look for.")
-##         } else {
-##             total_count
-##         }
-##     }
-## }
