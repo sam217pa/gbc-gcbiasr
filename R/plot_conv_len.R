@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @export
 
-plot_conv_len <- function(data)
+breakpoints_distribution <- function(data)
 {
     weak_or_strong <- function(base) {
 
@@ -21,24 +21,41 @@ plot_conv_len <- function(data)
     }
 
 
-    data %>%
+    distri_snp <- data %>%
         group_by(mutant, name ) %>%
         summarise(switchp = unique(switchp), switchb = unique(switchb)) %>%
         group_by(mutant, switchp, switchb) %>%
         summarise(distri = n()) %>%
         rowwise() %>%
         mutate(switchb = weak_or_strong(switchb)) %>%
-        mutate(switchb = factor(switchb, levels = c("s", "w", "N"))) %>%
-        ggplot(aes(x = switchp, y = distri, fill = switchb)) +
-        geom_bar(stat = "identity") +
-        geom_point(aes(color = switchb)) +
-                                        #stat_summary(fun.y = mean, geom = "point", color = "black", shape = "¦",
-                                        #size = 6) +
-        facet_grid(mutant ~. ) +
+        mutate(switchb = factor(switchb, levels = c("s", "w", "N")))
+
+    class(distri_snp) <- c("breakpoints", class(distri_snp))
+
+    distri_snp
+}
+
+
+#' @import ggplot2
+#' @export
+
+plot.breakpoints <- function(x, facet=TRUE, title = "", ...)
+{
+    p <-
+        ggplot(data = x, aes(x = switchp, y = distri, fill = switchb)) +
         scale_fill_solarized(guide = FALSE) +
         scale_color_solarized(labels = c("GC", "AT", "N")) +
-        labs(x = "Position de changement d'haplotype\nentre donneur et receveur",
-             y = "",
-             color = "Base au\npoint de bascule") +
+        labs(x = "Position de changement d'haplotype\nentre donneur et receveur"
+            ,y = ""
+            ,color = "Base au\npoint de bascule"
+            ,title = title) +
         theme(legend.position = "top")
+
+    if (facet) p + facet_grid(mutant ~. ) +
+                   geom_bar(stat = "identity") +
+                   geom_point(aes(color = switchb))
+    else p + geom_bar(stat = "identity"
+                     ,position = "stack"
+                     ,width = 1)
+
 }

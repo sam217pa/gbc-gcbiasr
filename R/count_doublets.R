@@ -145,7 +145,7 @@ count_restor <- function(data, quality = 40)
         group_by(mutant, sens) %>%
         summarise(count = n()) %>%
         ungroup() %>%
-        mutate(sens = factor(sens, labels = c("CG", "AT")))
+        mutate(sens = factor(sens, levels = c("CG", "AT"), labels = c("CG", "AT")))
 
     class(data) <- c("lastsnp", class(data))
     data
@@ -158,14 +158,14 @@ print.lastsnp <- function(x, ...)
 }
 
 #' @export
+
 plot.lastsnp <- function(x, ...)
 {
     ggplot(x, aes(x = mutant, y = count, color = sens )) +
         geom_point() +
         coord_flip() +
         scale_color_solarized(
-            labels = c("AT", "CG"),
-            guide = guide_legend(title = "SNP au point\nde bascule")) +
+           guide = guide_legend(title = "SNP au point\nde bascule")) +
         scale_y_continuous(breaks = extended_range_breaks()(x$count)) +
         labs(x = "Donneur", y = "") +
         theme(legend.position = "right")

@@ -19,8 +19,14 @@ CLOSED: [2016-04-27 Wed 10:16]
 Écrire une fonction permettant de compter les doublets dans les séquences,
 qu'ils soient en fin de trace de conversion, ou au milieu.
 
-* TODO Tester la fonction permettant de compter les motifs
+* DONE Tester la fonction permettant de compter les motifs
+CLOSED: [2016-04-27 Wed 20:31]
 Il faut encore tester la fonction. Pour ça je veux la confronter avec les
 graphiques "plot_align" modifiés de façon à représenter le SNP au point de
 bascule par un point plus gros avec une couleur différente, représentant le type
 de SNP (W ou S).
+
+* TODO inclure dans les comptages les derniers points de bascule
+Il faut inclure dans les comptages des points de switch les derniers SNPs. Ils
+correspondent bien aux derniers SNP convertis de toute façon.
+
