@@ -1,5 +1,7 @@
 # gcbiasr
 
+![plot_align example](img/sw_tract-1.png)
+
 This package is a convenience wrapper around some functions I've developped to
 analyse the sequencing data of the conversion tracts of *Acinetobacter*. The
 data in `data/` are the raw data parsed by `read_phruscle`. 
