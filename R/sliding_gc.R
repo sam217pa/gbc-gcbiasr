@@ -23,24 +23,24 @@ sliding_gc <- function(sequence, window_width = 100, slide_by = 1)
     if (!(is.count(slide_by)))
         stop("slide_by must be a positive integer")
 
-    sequence <- seqinr::read.fasta(sequence)
+    seq <- seqinr::read.fasta(sequence)
 
-    sequence.zoo <- zoo(getSequence(sequence)[[1]])
+    seq.zoo <- zoo(getSequence(seq)[[1]])
 
-    sequence.gc.sliding <- rollapply(
-        sequence.zoo
-       ,width = window_width
-       ,by = slide_by
-       ,FUN = GC
-       ,align = c("center", "left", "right")
-       ,fill = NA
-    )
+    seq.gc.sliding <- rollapply(
+	    seq.zoo
+	    ,width = window_width
+	    ,by = slide_by
+	    ,FUN = GC
+	    ,align = c("center", "left", "right")
+	    ,fill = NA
+	    )
 
     sequence.gc.data <-
-        data_frame(sequence.gc.sliding) %>%
-        add_rownames() %>%
-        select(id = rowname, GC = sequence.gc.sliding) %>%
-        mutate(id = as.numeric(id))
+	    data_frame(seq.gc.sliding) %>%
+	    add_rownames() %>%
+	    select(id = rowname, GC = seq.gc.sliding) %>%
+	    mutate(id = as.numeric(id))
 
     class(sequence.gc.data) <- c("gcslide", class(sequence.gc.data))
 
