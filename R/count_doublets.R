@@ -121,8 +121,8 @@ count_last_snp <- function(data)
 }
 
 
-#' @title Count restoration of wild type haplotype
-#' @description
+#' Count restoration of wild type haplotype
+#'
 #' This function count the number of event of wild type haplotype restoration.
 #'
 #' @param data a data frame of snp calling.
