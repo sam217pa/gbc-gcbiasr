@@ -145,7 +145,8 @@ count_restor <- function(data, quality = 40)
         group_by(mutant, sens) %>%
         summarise(count = n()) %>%
         ungroup() %>%
-        mutate(sens = factor(sens, levels = c("CG", "AT"), labels = c("CG", "AT")))
+        mutate(sens = factor(sens, levels = c("ss", "ww")
+			     , labels = c("CG", "AT")))
 
     class(data) <- c("lastsnp", class(data))
     data
