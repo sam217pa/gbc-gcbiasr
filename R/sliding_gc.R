@@ -1,5 +1,5 @@
 
-#' Measure GC content by sliding windo
+#' Measure GC content by sliding window
 #'
 #' Measure the GC content of a sequence by a sliding window of a given size.
 #'
@@ -9,7 +9,7 @@
 #'
 #' @param sequence a character vector of the sequence
 #' @importFrom zoo zoo rollapply
-#' @importFrom seqinr GC read.fasta getSequence
+#' @import seqinr 
 #' @import dplyr
 #'
 #' @export
@@ -23,16 +23,16 @@ sliding_gc <- function(sequence, window_width = 100, slide_by = 1)
     if (!(is.count(slide_by)))
         stop("slide_by must be a positive integer")
 
-    seq <- seqinr::read.fasta(sequence)
+    fasta <- seqinr::read.fasta(sequence)
 
-    seq.zoo <- zoo(getSequence(seq)[[1]])
+    seq.zoo <- zoo::zoo(seqinr::getSequence(fasta)[[1]])
 
-    seq.gc.sliding <- rollapply(
+    seq.gc.sliding <- zoo::rollapply(
 	    seq.zoo
 	    ,width = window_width
 	    ,by = slide_by
 	    ,FUN = GC
-	    ,align = c("center", "left", "right")
+	    ,align = "center" 
 	    ,fill = NA
 	    )
 

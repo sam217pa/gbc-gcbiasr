@@ -9,7 +9,7 @@
 #' @author Samuel Barreto
 #' @import dplyr
 #' @import ggplot2
-#' @import cowplot
+#' @importFrom cowplot ggdraw draw_label
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom ggthemes extended_range_breaks
 #' @importFrom assertthat assert_that is.string is.flag
