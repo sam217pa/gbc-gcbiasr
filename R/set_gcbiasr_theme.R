@@ -15,9 +15,9 @@ set_gcbiasr_theme <- function() {
         ## inspiré de http://minimaxir.com/2015/02/ggplot-tutorial/
         ## Generate the colors for the chart procedurally with RColorBrewer
         palette <- brewer.pal("Greys", n=9)
-        plot.background = "#f8f2df"
-        color.background = "#f8eed6"
-        color.strip.background = "#F8E9C7"
+        plot.background = "white"
+        color.background = "#F8F6EE"
+        color.strip.background = "white"
         ## alpha(color.background, 1)
         color.grid.major = palette[3]
         color.axis.text = palette[6]

@@ -5,6 +5,9 @@
 #' @param mutant_ the mutant to filter by.
 #' @param plot_title chose a title. if NULL, guess from the mutant parameter
 #' @param quality min quality to consider a restoration as such
+#' @param color logical : use color in the conversion tract or black and white.
+#'     color by default
+#' @param inverse logical : must inverse the x scale or not. inverse by default
 #' @return a ggplot output of the alignment
 #' @author Samuel Barreto
 #' @import dplyr
@@ -14,7 +17,8 @@
 #' @importFrom ggthemes extended_range_breaks
 #' @importFrom assertthat assert_that is.string is.flag
 #' @export
-plot_align <- function(data, mutant_, plot_title=NULL, quality = 30, color=TRUE)
+plot_align <- function(data, mutant_, plot_title=NULL, quality = 30
+                      ,color=TRUE, inverse=TRUE)
 {
     assert_that(
         is.data.frame(data)
@@ -123,6 +127,12 @@ plot_align <- function(data, mutant_, plot_title=NULL, quality = 30, color=TRUE)
                ,values = c("black", "gray")
                ,labels = c("Donneur", "Receveur"))
 
+    }
+
+    ## if inverse is TRUE, reverse the x scale. place the origin of conversion to 0.
+    ## FIXME pour une raison que j'ignore, ça ne marche pas.
+    if (inverse) {
+        align_plot <- align_plot + scale_x_reverse()
     }
 
     ggdraw(align_plot) +

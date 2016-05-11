@@ -9,7 +9,7 @@
 #'
 #' @param sequence a character vector of the sequence
 #' @importFrom zoo zoo rollapply
-#' @import seqinr 
+#' @importFrom seqinr read.fasta getSequence GC 
 #' @import dplyr
 #'
 #' @export
