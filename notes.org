@@ -1,0 +1,9 @@
+* Notes
+
+[2016-05-12 Thu 13:43] On a vu avec Laurent pour définir la position de switch
+des non convertants au maximum de la longueur de la séquence. Ça permet de les
+placer au zéro, et qu'ils soient tous comptés de la même façon.
+
+[2016-05-12 Thu 13:45] De la même façon, les dernières positions doivent être
+incluses dans le compte des position des bascule. Ils peuvent entraîner une
+partie de la variance d'un côté ou de l'autre.
