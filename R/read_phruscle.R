@@ -48,8 +48,10 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
 
 
     ## add a column which set the mutant type
-    find_mutant <- function(data) {
-        get_mutant_type <- function(name) {
+    find_mutant <- function(data)
+    {
+        get_mutant_type <- function(name)
+        {
             if      (grepl("ws", name)) "ws"
             else if (grepl("sw", name)) "sw"
             else if (grepl("W", name )) "w"
@@ -58,13 +60,14 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
             else if (grepl("s", name )) "s"
             else ""
         }
+
         ## neat little trick to reduce time of rowwise application of find_mutant.
         ## get the mutant's type, either ws, sw, w or s.
         data %>%
             group_by(name) %>%
             summarise(id = unique(name)) %>%
             rowwise() %>%
-            mutate(mutant=get_mutant_type(id)) %>%
+            mutate(mutant = get_mutant_type(id)) %>%
             mutate(mutant = factor(mutant, levels = mutant_levels)) %>%
             inner_join(data, .) %>%
             select(-id) %>%
@@ -73,7 +76,8 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
 
     ## add a column which sets the lastmp, last marker position, starting from
     ## the conversion side.
-    find_lastmp <- function(data) {
+    find_lastmp <- function(data)
+    {
         data %>% group_by(name) %>%
             filter(cons == "x" | cons == "X") %>%
             summarise(lastmp = min(refp)) %>%
@@ -81,7 +85,9 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
     }
 
     ## add a column which sets the the switchp, switch position.
-    find_switchp <- function(data) {
+    find_switchp <- function(data)
+    {
+        max_refp <- max(data$refp)
         switch_pos_table <- rbind(
             ## deals with cases where there is a conversion tract.
             data %>%
@@ -92,7 +98,7 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
             data %>%
             group_by(name) %>%
             filter(!("x" %in% cons)) %>%
-            summarise(switchp = max(refp))
+            summarise(switchp = max_refp)
         )
         inner_join(data, switch_pos_table)
     }
@@ -106,10 +112,12 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
             left_join(data, .)
     }
 
-    find_polarity <- function(data) {
+    ## détermine si un snp est dans le sens W to S ou S to W
+    find_polarity <- function(data)
+    {
 
-        strong_or_weak <- function(base) {
-
+        strong_or_weak <- function(base)
+        {
             is_w <- function(base) { ifelse(base == "A" | base == "T", TRUE, FALSE)}
             is_s <- function(base) { ifelse(base == "C" | base == "G", TRUE, FALSE)}
 
@@ -128,14 +136,16 @@ read_phruscle <- function(path=NULL, mutant_levels = NULL)
             left_join(data, .)
     }
 
-    find_isinconv <- function(data) {
+    find_isinconv <- function(data)
+    {
         data %>%
             ## si la position est avant la position de switch.
             mutate(inconv = ifelse(refp >= switchp, TRUE, FALSE)) %>%
             inner_join(data, .)
     }
 
-    find_isrestor <- function(data) {
+    find_isrestor <- function(data)
+    {
         data %>%
             filter(inconv, cons == "x" | cons == "X", expb == refb) %>%
             mutate(isrestor = TRUE) %>%

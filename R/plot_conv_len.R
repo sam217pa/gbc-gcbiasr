@@ -20,6 +20,7 @@ breakpoints_distribution <- function(data)
         else "N"
     }
 
+    # TODO commenter code. rien n'est très clair à la relecture
 
     distri_snp <- data %>%
         group_by(mutant, name ) %>%

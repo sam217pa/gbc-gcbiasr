@@ -27,7 +27,7 @@ set_gcbiasr_theme <- function() {
         theme_bw(base_size=9) +
             ## Set the entire chart region to a light gray color
             theme(
-                text = element_text(family = "Ubuntu Light"),
+                text = element_text(family = "Ubuntu"),
                 panel.background=element_rect(
                     fill=alpha(color.background, 1), color=color.background),
                 plot.background=element_rect(
@@ -59,7 +59,7 @@ set_gcbiasr_theme <- function() {
                 axis.title.y = element_text(
                     size = 8, color = color.axis.title, vjust = 0.9, angle = 0 ),
                 ## Plot margins
-                plot.margin = unit(c(0.35, 0.2, 0.3, 0.35), "cm")
+                plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
             )
     }
 
