@@ -1,6 +1,6 @@
 Package: gcbiasr
 Title: Analysis of biased gene conversion in bacteria
-Version: 0.0.0.9000
+Version: 0.1
 Authors@R: person("Samuel", "BARRETO", email = "samuel.barreto8@gmail.com", role = c("aut", "cre"))
 Description: Package to load gene conversion analysis as a table of pairwise
     alignment. Various plots and convenient functions.
