@@ -106,7 +106,7 @@ count_last_snp <- function(data)
 
     data <-
         data %>%
-        filter(switchp != lastmp, refp == switchp, cons == "x" | cons == "X") %>%
+        filter(refp == switchp, cons == "x" | cons == "X") %>%
         ## print()
         ## filter(is.na(sens))
         group_by(mutant, sens) %>%
@@ -166,7 +166,7 @@ plot.lastsnp <- function(x, ...)
         geom_point() +
         coord_flip() +
         scale_color_solarized(
-           guide = guide_legend(title = "SNP au point\nde bascule")) +
+            guide = guide_legend(title = "SNP au point\nde bascule")) +
         scale_y_continuous(breaks = extended_range_breaks()(x$count)) +
         labs(x = "Donneur", y = "") +
         theme(legend.position = "right")
