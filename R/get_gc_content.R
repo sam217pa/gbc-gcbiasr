@@ -48,7 +48,7 @@ get_gc_content <- function(data, mut=NULL, clean = TRUE) {
 ##' Plot the mean gc content per sequence
 ##'
 ##' @importFrom assertthat is.string assert_that
-##' @importFrom ggthemes scale_colour_solarized extended_range_breaks
+##' @importFrom ggthemes scale_color_solarized extended_range_breaks
 ##' @import dplyr
 ##' @import ggplot2
 ##' @export
@@ -58,14 +58,11 @@ plot.gc_content <- function(x, plot_title=NULL, ...)
     ## set default parameter
     if (is.null(plot_title)) plot_title <- "Comparaison des taux de GC"
 
-
-    ## data <-
-    ##     keep_clean_only(data) %>%
-    ##     get_gc_content(mut = mut) %>%
-
     x %>%
-        mutate(mutant = factor(mutant, levels = c("w", "s", "sw", "ws"),
-                               labels = c("AT", "GC", "AT/GC", "GC/AT"))) %>%
+        mutate(
+            mutant = factor(mutant, levels = c("w", "s", "sw", "ws"),
+                            labels = c("AT", "GC", "AT/GC", "GC/AT"))
+        ) %>%
     ggplot(aes(x = type, y = GC)) +
         geom_jitter(aes(color = mutant), width = 1/4, alpha = 1/3, size = 1) +
         geom_line(aes(group = name, color = mutant), alpha = 1/20) +
