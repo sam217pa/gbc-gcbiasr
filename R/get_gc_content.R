@@ -47,8 +47,6 @@ get_gc_content <- function(data, mut=NULL, clean = TRUE) {
 
 ##' Plot the mean gc content per sequence
 ##'
-##' @importFrom assertthat is.string assert_that
-##' @importFrom ggthemes scale_color_solarized extended_range_breaks
 ##' @import dplyr
 ##' @import ggplot2
 ##' @export
