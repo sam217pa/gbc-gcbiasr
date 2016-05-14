@@ -63,14 +63,14 @@ plot.gc_content <- function(x, plot_title=NULL, ...)
             mutant = factor(mutant, levels = c("w", "s", "sw", "ws"),
                             labels = c("AT", "GC", "AT/GC", "GC/AT"))
         ) %>%
-    ggplot(aes(x = type, y = GC)) +
-        geom_jitter(aes(color = mutant), width = 1/4, alpha = 1/3, size = 1) +
-        geom_line(aes(group = name, color = mutant), alpha = 1/20) +
+    ggplot(aes(x = type, y = GC, color = type)) +
+        geom_jitter(width = 1/4, alpha = 1/3, size = 1) +
+        geom_line(aes(group = name), alpha = 1/20) +
         stat_summary(
             fun.y = mean
            ,geom = "point", color = "black", shape = "¦", size = 6) +
         facet_grid(mutant ~ .) +
         labs(y = "% GC", x = "", title = plot_title) +
-        scale_color_solarized() +
+        scale_color_manual(values = c("#1F78B4", "#06A858", "#E31A1C")) +
         coord_flip()
 }
